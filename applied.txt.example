@@ -1,0 +1,3 @@
+# Copy to applied.txt and list posting IDs you've already applied to (one per line).
+# The ID is any unique piece of the job URL, e.g. a Greenhouse job id or Workday req id.
+1234567

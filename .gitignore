@@ -1,0 +1,8 @@
+# secrets and personal state
+telegram.env
+applied.txt
+seen.json
+ALERTS.md
+logs/
+__pycache__/
+*.pyc
