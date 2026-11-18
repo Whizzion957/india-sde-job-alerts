@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#182d29" />
+    <title>Role Atlas · Job search workspace</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40'%3E%3Crect width='40' height='40' rx='8' fill='%23d6efa0'/%3E%3Cpath d='M11 29 29 11m-14 0h14v14' fill='none' stroke='%23182d29' stroke-width='3'/%3E%3C/svg%3E"
+    />
+    <link rel="stylesheet" href="/style.css" />
+    <script type="module" src="/app.js"></script>
+  </head>
+  <body>
+    <a class="skip" href="#main">Skip to opportunities</a>
+    <header class="topbar">
+      <div class="top-inner">
+        <a class="brand" href="#feed" aria-label="Role Atlas home"
+          ><span class="brand-mark" aria-hidden="true">↗</span>Role Atlas</a
+        >
+        <nav aria-label="Workspace">
+          <a href="#feed" id="nav-feed" aria-current="page">Discover</a>
+          <a href="#shortlist" id="nav-shortlist">Shortlist</a>
+          <a href="#applications" id="nav-apps"
+            >Applications <span id="nav-count" hidden></span
+          ></a>
+          <a href="#archive" id="nav-archive">Archive</a>
+        </nav>
+        <div class="account-actions">
+          <span id="identity" hidden></span
+          ><a class="account" id="account" target="_top" href="/account"
+            >Sign in</a
+          >
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <header class="hero">
+        <div>
+          <p class="kicker" id="scan-kicker" hidden></p>
+          <h1 id="view-title">Opportunity feed<span>.</span></h1>
+          <p id="subtitle">
+            Roles from company career boards, matched to your search
+            preferences.
+          </p>
+        </div>
+        <button id="edit-top" class="dark" type="button" disabled>
+          <span aria-hidden="true">☷</span> Edit preferences
+        </button>
+      </header>
+      <div id="notices" aria-live="polite"></div>
+      <section class="metrics" aria-label="Workspace overview">
+        <div>
+          <span class="stat-label">Matching roles</span
+          ><strong id="matches-total">—</strong>
+        </div>
+        <div>
+          <span class="stat-label">Hiring companies</span
+          ><strong id="companies-total">—</strong>
+        </div>
+        <div>
+          <span class="stat-label">Applications tracked</span
+          ><strong id="applied-total">—</strong>
+        </div>
+      </section>
+      <div class="layout">
+        <section class="results" aria-labelledby="results-title">
+          <div class="section-heading">
+            <h2 id="results-title">Job matches</h2>
+            <label class="sort"
+              >Sort
+              <select id="sort" aria-label="Sort jobs">
+                <option value="match">Best match</option>
+                <option value="recent">Newest posting</option>
+                <option value="company">Company A–Z</option>
+              </select></label
+            >
+          </div>
+          <label class="search"
+            ><span class="lens" aria-hidden="true"></span
+            ><input
+              id="query"
+              type="search"
+              aria-label="Search roles, companies, locations or skills"
+              placeholder="Search roles, companies, locations or skills"
+          /></label>
+          <div id="tracker-tools" class="tracker-tools" hidden>
+            <label for="tracker-filter">Show</label>
+            <select id="tracker-filter">
+              <option value="">All applications</option>
+              <option value="due">Follow-ups due</option>
+              <option value="planned">Upcoming follow-ups</option>
+            </select>
+            <button type="button" class="text-btn" id="due-shortcut" hidden></button>
+          </div>
+          <div id="result-line" role="status">Loading opportunities…</div>
+          <div id="cards" aria-busy="true"></div>
+          <div class="pager" id="pager" hidden>
+            <button id="prev" type="button">← Previous</button
+            ><span id="page-label"></span
+            ><button id="next" type="button">Next →</button>
+          </div>
+        </section>
+        <aside aria-label="Search settings and scan status">
+          <section class="panel prefs">
+            <div class="panel-heading">
+              <span class="settings-symbol" aria-hidden="true">☷</span>
+              <h2>Your search</h2>
+            </div>
+            <dl id="pref-summary"></dl>
+            <button type="button" class="text-btn" id="edit-side" disabled>
+              Adjust preferences <span aria-hidden="true">→</span>
+            </button>
+          </section>
+          <section class="panel scan">
+            <div class="panel-heading">
+              <span class="signal" aria-hidden="true"></span>
+              <h2>Scan coverage</h2>
+            </div>
+            <p id="coverage">Loading board activity…</p>
+            <p id="last-scan"></p>
+            <p id="scan-progress" role="status"></p>
+            <p id="scan-timing"></p>
+            <div class="scan-actions">
+              <button class="text-btn" id="view-sources" type="button">
+                View boards <span aria-hidden="true">→</span></button
+              ><button class="text-btn" id="refresh" type="button">
+                Reload results
+              </button>
+            </div>
+          </section>
+        </aside>
+      </div>
+    </main>
+    <dialog id="application-editor" aria-labelledby="application-editor-title">
+      <form id="application-form">
+        <div class="dialog-head">
+          <h2 id="application-editor-title">Update application</h2>
+          <button type="button" class="close" data-close aria-label="Close application editor">×</button>
+        </div>
+        <p id="application-role"></p>
+        <label>Stage <select id="application-stage" required></select></label>
+        <label>Follow-up date <input id="application-follow-up" type="date" /></label>
+        <label>Private notes <textarea id="application-notes" rows="5" maxlength="2000" placeholder="Interview prep, recruiter details, or your next action"></textarea></label>
+        <p id="application-error" class="form-message" role="status"></p>
+        <div class="form-actions"><button class="dark" id="save-application">Save application</button></div>
+      </form>
+    </dialog>
+    <dialog id="pref-dialog" aria-labelledby="pref-title">
+      <form id="pref-form">
+        <div class="dialog-head">
+          <h2 id="pref-title">Search preferences</h2>
+          <button
+            type="button"
+            class="close"
+            data-close
+            aria-label="Close preferences"
+          >
+            ×
+          </button>
+        </div>
+        <fieldset>
+          <legend>Role families</legend>
+          <div class="family-tools">
+            <button type="button" class="text-btn" id="all-families">
+              Select all</button
+            ><button type="button" class="text-btn" id="clear-families">
+              Clear selection
+            </button>
+          </div>
+          <div class="checks" id="family-options"></div>
+        </fieldset>
+        <fieldset>
+          <legend>Seniority <small>(leave empty for all levels)</small></legend>
+          <div class="checks" id="level-options"></div>
+        </fieldset>
+        <div class="form-row">
+          <label
+            >Location<input
+              id="pref-location"
+              maxlength="200"
+              placeholder="Any location"
+            /><small>Separate locations with commas</small></label
+          ><label
+            >Years of experience<input
+              id="pref-years"
+              type="number"
+              min="0"
+              max="80"
+              step="any"
+              placeholder="Any"
+          /></label>
+        </div>
+        <label
+          >Preferred skills <small>Separate with commas</small
+          ><input
+            id="pref-skills"
+            maxlength="320"
+            placeholder="Python, SQL, TypeScript"
+        /></label>
+        <label
+          >Work arrangement<select id="pref-workplace">
+            <option value="">Any arrangement</option>
+            <option value="remote">Remote</option>
+            <option value="hybrid">Hybrid</option>
+            <option value="onsite">On-site</option>
+          </select></label
+        >
+        <label
+          >Posting date<select id="pref-age">
+            <option value="">Any date</option>
+            <option value="1">Today</option>
+            <option value="7">Past 7 days</option>
+            <option value="14">Past 14 days</option>
+            <option value="30">Past 30 days</option>
+            <option value="90">Past 90 days</option>
+          </select></label
+        >
+        <label class="check"
+          ><input id="pref-undated" type="checkbox" /> Include listings without
+          a posting date</label
+        >
+        <label class="check"
+          ><input id="pref-uncertain" type="checkbox" /> Include opportunities
+          with incomplete match information</label
+        >
+        <p class="form-message" role="status" id="pref-message"></p>
+        <label class="check" id="hide-applied-option" hidden>
+          <input id="pref-hide-applied" type="checkbox" />
+          Hide jobs I've applied to from Discover
+        </label>
+        <div class="form-actions">
+          <button type="button" class="text-btn" id="reset-prefs">
+            Restore defaults</button
+          ><button class="dark" id="save-prefs">Save preferences</button>
+        </div>
+      </form>
+    </dialog>
+    <dialog id="source-dialog" aria-labelledby="source-title">
+      <div class="dialog-head">
+        <h2 id="source-title">Company boards</h2>
+        <button class="close" data-close aria-label="Close company boards">
+          ×
+        </button>
+      </div>
+      <p id="source-overview"></p>
+      <ul id="source-list"></ul>
+    </dialog>
+    <div id="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>

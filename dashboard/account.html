@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Account · Job dashboard</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: #f4f6ef;
+        color: #192d25;
+        font:
+          16px system-ui,
+          sans-serif;
+      }
+      main {
+        width: min(92vw, 430px);
+        background: white;
+        border: 1px solid #d4ded3;
+        border-radius: 18px;
+        padding: 36px;
+      }
+      h1 {
+        letter-spacing: -0.045em;
+        margin: 0.8em 0 0.25em;
+      }
+      p {
+        line-height: 1.5;
+        color: #4a6056;
+      }
+      label {
+        display: block;
+        margin: 16px 0 6px;
+        font-weight: 600;
+      }
+      input,
+      button {
+        font: inherit;
+        width: 100%;
+        padding: 11px;
+        border-radius: 7px;
+        border: 1px solid #82998b;
+      }
+      button {
+        background: #19483a;
+        color: white;
+        cursor: pointer;
+        margin-top: 18px;
+      }
+      button.link {
+        background: white;
+        color: #164a37;
+        border: 0;
+        margin-top: 5px;
+      }
+      a {
+        color: #15523c;
+      }
+      #status {
+        color: #893117;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <a href="/">← Back to jobs</a>
+      <h1 id="heading">Sign in</h1>
+      <p>Keep your search preferences and application history together.</p>
+      <form id="account">
+        <label for="name">Username</label
+        ><input
+          id="name"
+          autocomplete="username"
+          required
+          minlength="2"
+          maxlength="64"
+        /><label for="password">Password</label
+        ><input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          minlength="10"
+          maxlength="256"
+          required
+        />
+        <p id="hint" hidden>Choose a password with at least 10 characters.</p>
+        <button id="submit">Sign in</button>
+      </form>
+      <button type="button" class="link" id="mode">Create an account</button>
+      <p id="status" role="alert"></p>
+    </main>
+    <script>
+      const byId = (id) => document.getElementById(id);
+      let register = false;
+      byId("mode").onclick = () => {
+        register = !register;
+        byId("heading").textContent = byId("submit").textContent = register
+          ? "Create account"
+          : "Sign in";
+        byId("mode").textContent = register
+          ? "Already registered? Sign in"
+          : "Create an account";
+        byId("hint").hidden = !register;
+        byId("password").autocomplete = register
+          ? "new-password"
+          : "current-password";
+        byId("status").textContent = "";
+      };
+      byId("account").onsubmit = async (e) => {
+        e.preventDefault();
+        byId("submit").disabled = true;
+        try {
+          const res = await fetch(register ? "/api/register" : "/api/login", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              username: byId("name").value,
+              password: byId("password").value,
+            }),
+          });
+          if (res.ok) {
+            location.replace("/");
+            return;
+          }
+          byId("status").textContent = (await res.json()).error;
+        } catch {
+          byId("status").textContent =
+            "Could not reach the dashboard. Try again.";
+        } finally {
+          byId("submit").disabled = false;
+        }
+      };
+    </script>
+  </body>
+</html>

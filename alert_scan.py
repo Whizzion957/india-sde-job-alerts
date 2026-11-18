@@ -2,7 +2,7 @@
 """India entry-level SDE job alert scanner.
 Reports postings published in the last WINDOW_DAYS days on official job-board APIs,
 excluding roles already applied to. Prints a markdown report to stdout."""
-import json, re, html, sys, time, datetime as dt, urllib.request, concurrent.futures as cf
+import gzip, json, re, html, sys, time, datetime as dt, urllib.error, urllib.request, concurrent.futures as cf
 
 WINDOW_DAYS = float(sys.argv[1]) if len(sys.argv) > 1 and not sys.argv[1].startswith("-") else 3.5
 NOW = dt.datetime.now(dt.timezone.utc)
@@ -58,7 +58,7 @@ BAD = re.compile(r"senior|sr\.?\b|staff|lead|principal|manager|director|head|arc
                  r"test|qa\b|sdet|security|network|data center|devops|site reliability|escalation|designer|technician|quality|"
                  r"manufactur|equipment|process engineer|automation engineer", re.I)
 OK_FETCHES = [0]
-UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/126", "Accept": "application/json"}
+UA = {"User-Agent": "Mozilla/5.0 (X11; Linux x86_64) Chrome/126", "Accept": "application/json", "Accept-Encoding": "gzip"}
 
 def fetch(url, data=None, raw=False, extra=None):
     h = dict(UA); h.update(extra or {})
@@ -67,11 +67,25 @@ def fetch(url, data=None, raw=False, extra=None):
         try:
             req = urllib.request.Request(url, data=json.dumps(data).encode() if data is not None else None, headers=h)
             with urllib.request.urlopen(req, timeout=45) as r:
-                b = r.read().decode("utf-8", "replace")
+                payload = r.read()
+                if r.headers.get("Content-Encoding", "").lower() == "gzip":
+                    payload = gzip.decompress(payload)
+                b = payload.decode("utf-8", "replace")
                 out = b if raw else json.loads(b)
                 OK_FETCHES[0] += 1
                 return out
-        except Exception:
+        except urllib.error.HTTPError as e:
+            if e.code in (400, 401, 403, 404, 410, 422):
+                return None
+            delay = e.headers.get("Retry-After", "")
+            if delay.isdigit() and attempt < 2:
+                if int(delay) > 60:
+                    return None
+                time.sleep(int(delay))
+                continue
+        except (ValueError, OSError):
+            pass
+        if attempt < 2:
             time.sleep(3 * (attempt + 1))
     return None
 
